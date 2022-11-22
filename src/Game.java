@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 public class Game extends Canvas {
@@ -20,19 +21,23 @@ public class Game extends Canvas {
         game.startGame();
     }
 
-    private static final int deltaTime = 20;
+    private static final int deltaTime = 10;
     private static final double delta = (double)deltaTime / 1000.0;
     private final Bird bird;
     private final ObstacleCreator obstacleCreator;
     private final LinkedList<Obstacle> obstacles;
     private static final double obstacleDeltaTime = 1000.0;
     private double currentObstacleTime;
+    private final HashSet<Obstacle> alreadyScored;
+    private int score;
 
     public Game() {
         bird = new Bird(10, 20, (double)displaySize / 2.0);
         obstacleCreator = new ObstacleCreator(displaySize, displaySize, 30, 150);
         obstacles = new LinkedList<>();
         currentObstacleTime = obstacleDeltaTime;
+        alreadyScored = new HashSet<>();
+        score = 0;
         setFocusable(true);
         addKeyListener(new KeyAdapter() {
             @Override public void keyPressed(KeyEvent e) {
@@ -59,7 +64,13 @@ public class Game extends Canvas {
     }
 
     private void updateObstacles() {
-        obstacles.forEach(e -> e.update(delta, 180));
+        obstacles.forEach(e -> {
+            e.update(delta, 180);
+            if (!alreadyScored.contains(e) && e.getX() < bird.getX()) {
+                score++;
+                alreadyScored.add(e);
+            }
+        });
         obstacles.removeIf(e -> e.getX() < 0);
         currentObstacleTime -= deltaTime;
         if (currentObstacleTime < 0) {
@@ -93,6 +104,8 @@ public class Game extends Canvas {
         bird.reset();
         currentObstacleTime = obstacleDeltaTime;
         obstacles.clear();
+        alreadyScored.clear();
+        score = 0;
     }
 
     private static final int obstacleWidth = 5;
@@ -108,6 +121,12 @@ public class Game extends Canvas {
             graphics.fillRect(x - obstacleWidth, 0, obstacleWidth * 2, upperY);
             graphics.fillRect(x - obstacleWidth, lowerY, obstacleWidth * 2, displaySize - lowerY);
         }
+
+        final var x = displaySize / 2;
+        final var y = 50;
+        graphics.setColor(Color.gray);
+        graphics.setFont(new Font("Arial", Font.BOLD, 36));
+        graphics.drawString(Integer.toString(score), x, y);
     }
 
 }
