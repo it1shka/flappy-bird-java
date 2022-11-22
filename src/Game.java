@@ -59,7 +59,7 @@ public class Game extends Canvas {
     }
 
     private void updateObstacles() {
-        obstacles.forEach(e -> e.update(delta, 200));
+        obstacles.forEach(e -> e.update(delta, 180));
         obstacles.removeIf(e -> e.getX() < 0);
         currentObstacleTime -= deltaTime;
         if (currentObstacleTime < 0) {
@@ -77,10 +77,12 @@ public class Game extends Canvas {
             return;
         }
 
+        final var size = bird.getSize();
+
         for (final var obstacle: obstacles) {
             final var obstacleX = obstacle.getX();
             if (Math.abs(x - obstacleX) > obstacleWidth) continue;
-            if (y < obstacle.getUpperY() || y > obstacle.getLowerY()) {
+            if (y - size <= obstacle.getUpperY() || y + size >= obstacle.getLowerY()) {
                 resetGame();
                 return;
             }
